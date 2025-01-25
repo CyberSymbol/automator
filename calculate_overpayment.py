@@ -40,10 +40,10 @@ if __name__ == "__main__":
     import pandas as pd  # Импорт библиотеки для работы с таблицами
 
     # Получение входных данных
-    budget_rub = float(input("Введите сумму в рублях для покупки: "))
-    usd_to_rub = float(input("Введите курс рубля к доллару: "))
-    crypto_price_usd = float(input("Введите текущую цену криптовалюты в долларах: "))
-    offered_price_rub = float(input("Введите предложенную цену криптовалюты в рублях: "))
+    budget_rub = float(input("Введите сумму в рублях для покупки: ").replace(',', '.'))
+    usd_to_rub = float(input("Введите курс рубля к доллару: ").replace(',', '.'))
+    crypto_price_usd = float(input("Введите текущую цену криптовалюты в долларах: ").replace(',', '.'))
+    offered_price_rub = float(input("Введите предложенную цену криптовалюты в рублях: ").replace(',', '.'))
 
     # Генерация списка цен с шагом 1% (10 значений)
     offered_prices = [offered_price_rub * (1 + i / 100) for i in range(11)]
