@@ -37,16 +37,19 @@ def calculate_crypto_overpayment(budget_rub, usd_to_rub, crypto_price_usd, offer
     }
 
 if __name__ == "__main__":
-    import pandas as pd  # Импорт библиотеки для работы с таблицами
-    import matplotlib.pyplot as plt # Импорт модуля для работы с PDF
-    from matplotlib.backends.backend_pdf import PdfPages
-    from datetime import datetime
 
-    # Получение входных данных
-    budget_rub = float(input("Введите сумму в рублях для покупки: ").replace(',', '.'))
-    usd_to_rub = float(input("Введите курс рубля к доллару: ").replace(',', '.'))
-    crypto_price_usd = float(input("Введите текущую цену криптовалюты в долларах: ").replace(',', '.'))
-    offered_price_rub = float(input("Введите предложенную цену криптовалюты в рублях: ").replace(',', '.'))
+    # Параметры для автоматического тестирования
+    budget_rub = 100000
+    usd_to_rub = 97.8139
+    crypto_price_usd = 3338
+    offered_price_rub = 347462
+
+    # # Получение входных данных
+    # budget_rub = float(input("Введите сумму в рублях для покупки: ").replace(',', '.'))
+    # usd_to_rub = float(input("Введите курс рубля к доллару: ").replace(',', '.'))
+    # crypto_price_usd = float(input("Введите текущую цену криптовалюты в долларах: ").replace(',', '.'))
+    # offered_price_rub = float(input("Введите предложенную цену криптовалюты в рублях: ").replace(',', '.'))
+
 
     # Генерация списка цен с шагом 1% (10 значений)
     def human_readable_round(number):
@@ -75,15 +78,19 @@ if __name__ == "__main__":
     ] + [
         human_readable_round(offered_price_rub * (1 + i / 200)) for i in range(1, 21)
     ]
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+from datetime import datetime
 
 # Создание таблицы переплат
 table_data = []
 for price in offered_prices:
     result = calculate_crypto_overpayment(budget_rub, usd_to_rub, crypto_price_usd, price)
     table_data.append({
-        "Цена крипты, rub": round(price),
-        "Переплата, rub": round(result['overpayment_rub']),
-        "Переплата, usd": round(result['overpayment_usd']),
+        "Цена крипты, rub": int(price),
+        "Переплата, rub": int(result['overpayment_rub']),
+        "Переплата, usd": int(result['overpayment_usd']),
         "Недостача крипты": round(result['missed_crypto'], 3)
     })
 
