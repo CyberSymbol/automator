@@ -65,19 +65,27 @@ if __name__ == "__main__":
             round_to = 10 ** (num_digits // 2 + 1)  # Ещё одна значимая цифра
         return math.floor(number / round_to) * round_to
 
-    offered_prices = [offered_price_rub] + [human_readable_round(offered_price_rub * (1 + i / 100)) for i in range(1, 11)]
+    offered_prices = [
+        human_readable_round(offered_price_rub * (1 - i / 200)) for i in range(20, 0, -1)
+    ] + [
+        offered_price_rub
+    ] + [
+        human_readable_round(offered_price_rub * (1 + i / 200)) for i in range(1, 21)
+    ]
 
-    # Создание таблицы переплат
+# Создание таблицы переплат
     table_data = []
     for price in offered_prices:
         result = calculate_crypto_overpayment(budget_rub, usd_to_rub, crypto_price_usd, price)
         table_data.append({
-            "Price": round(price),
-            "-RUB": round(result['overpayment_rub']),
-            "-USD": round(result['overpayment_usd']),
-            "-Crypto": round(result['missed_crypto'], 3)
+            "Цена крипты, rub": round(price),
+            "Переплата, rub": round(result['overpayment_rub']),
+            "Переплата, usd": round(result['overpayment_usd']),
+            "Недостача крипты": round(result['missed_crypto'], 3)
         })
 
     # Вывод таблицы
     table = pd.DataFrame(table_data)
+    pd.options.display.float_format = "{:.2f}".format
+    pd.set_option("display.colheader_justify", "center")
     print(table.to_string(index=False))
