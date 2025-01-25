@@ -38,6 +38,9 @@ def calculate_crypto_overpayment(budget_rub, usd_to_rub, crypto_price_usd, offer
 
 if __name__ == "__main__":
     import pandas as pd  # Импорт библиотеки для работы с таблицами
+    import matplotlib.pyplot as plt # Импорт модуля для работы с PDF
+    from matplotlib.backends.backend_pdf import PdfPages
+    from datetime import datetime
 
     # Получение входных данных
     budget_rub = float(input("Введите сумму в рублях для покупки: ").replace(',', '.'))
@@ -74,18 +77,31 @@ if __name__ == "__main__":
     ]
 
 # Создание таблицы переплат
-    table_data = []
-    for price in offered_prices:
-        result = calculate_crypto_overpayment(budget_rub, usd_to_rub, crypto_price_usd, price)
-        table_data.append({
-            "Цена крипты, rub": round(price),
-            "Переплата, rub": round(result['overpayment_rub']),
-            "Переплата, usd": round(result['overpayment_usd']),
-            "Недостача крипты": round(result['missed_crypto'], 3)
-        })
+table_data = []
+for price in offered_prices:
+    result = calculate_crypto_overpayment(budget_rub, usd_to_rub, crypto_price_usd, price)
+    table_data.append({
+        "Цена крипты, rub": round(price),
+        "Переплата, rub": round(result['overpayment_rub']),
+        "Переплата, usd": round(result['overpayment_usd']),
+        "Недостача крипты": round(result['missed_crypto'], 3)
+    })
 
-    # Вывод таблицы
-    table = pd.DataFrame(table_data)
-    pd.options.display.float_format = "{:.2f}".format
-    pd.set_option("display.colheader_justify", "center")
-    print(table.to_string(index=False))
+# Создание DataFrame
+table = pd.DataFrame(table_data)
+
+# Настройка отображения таблицы
+fig, ax = plt.subplots(figsize=(10, len(table) * 0.5))  # Размер фигуры зависит от количества строк
+ax.axis('tight')
+ax.axis('off')
+table_plot = ax.table(cellText=table.values, colLabels=table.columns, cellLoc='center', loc='center')
+
+# Генерация имени файла с датой и временем
+current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+output_path = f"/home/vladimir/Документы/Crypto/таблицы рублёвых переплат/overpayment_{current_time}.pdf"
+
+# Сохранение таблицы в PDF
+with PdfPages(output_path) as pdf:
+    pdf.savefig(fig, bbox_inches='tight')
+
+plt.close()
