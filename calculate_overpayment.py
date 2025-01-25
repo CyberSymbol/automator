@@ -46,7 +46,26 @@ if __name__ == "__main__":
     offered_price_rub = float(input("Введите предложенную цену криптовалюты в рублях: ").replace(',', '.'))
 
     # Генерация списка цен с шагом 1% (10 значений)
-    offered_prices = [offered_price_rub * (1 + i / 100) for i in range(11)]
+    def human_readable_round(number):
+        """
+        Округляет число в "человеческом" формате, чтобы оно было легко читаемо.
+        Например: 346531 -> 346000, 12345 -> 12000.
+
+        Args:
+            number (float): Число для округления.
+
+        Returns:
+            float: Округленное число.
+        """
+        import math
+        num_digits = len(str(int(number)))  # Количество цифр в числе
+        if num_digits % 2 == 0:
+            round_to = 10 ** (num_digits // 2)  # Округляем до половины цифр
+        else:
+            round_to = 10 ** (num_digits // 2 + 1)  # Ещё одна значимая цифра
+        return math.floor(number / round_to) * round_to
+
+    offered_prices = [offered_price_rub] + [human_readable_round(offered_price_rub * (1 + i / 100)) for i in range(1, 11)]
 
     # Создание таблицы переплат
     table_data = []
