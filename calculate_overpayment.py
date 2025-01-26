@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from datetime import datetime
+import math
 
 # Параметры для автоматического тестирования
 budget_rub = 100000
@@ -9,8 +10,24 @@ usd_to_rub = 97.8139
 crypto_price_usd = 3338
 offered_price_rub = 347462
 
-# Список цен для расчётов (пример с шагом и диапазоном цен)
-offered_prices = [offered_price_rub * (1 + i / 200) for i in range(-20, 21)]
+# Функция для очеловечивания чисел
+def human_readable_round(number):
+    """
+    Округляет число в "человеческом" формате, чтобы оно было легко читаемо.
+    Например: 346531 -> 346000, 12345 -> 12000.
+    """
+    num_digits = len(str(int(number)))
+    if num_digits % 2 == 0:
+        round_to = 10 ** (num_digits // 2)
+    else:
+        round_to = 10 ** (num_digits // 2 + 1)
+    return math.floor(number / round_to) * round_to
+
+# Генерация списка цен
+offered_prices = [
+    human_readable_round(offered_price_rub * (1 + i / 200)) if i != 0 else offered_price_rub
+    for i in range(-20, 21)
+]
 
 # Создание таблицы переплат
 def calculate_crypto_overpayment(budget_rub, usd_to_rub, crypto_price_usd, offered_price_rub):
@@ -42,35 +59,40 @@ for price in offered_prices:
 table = pd.DataFrame(table_data)
 
 # Настройка отображения таблицы
-fig, ax = plt.subplots(figsize=(10, len(table) * 0.5))  # Размер фигуры зависит от количества строк
+fig, ax = plt.subplots(figsize=(10, len(table) * 0.5))
 ax.axis('tight')
 ax.axis('off')
 
-# Преобразование данных таблицы для отображения
+# Преобразование данных таблицы
+formatted_data = table.copy()
+formatted_data["Цена крипты, rub"] = formatted_data["Цена крипты, rub"].apply(lambda x: f"{int(x)}")
+formatted_data["Переплата, rub"] = formatted_data["Переплата, rub"].apply(lambda x: f"{int(x)}")
+formatted_data["Переплата, usd"] = formatted_data["Переплата, usd"].apply(lambda x: f"{int(x)}")
+
 table_plot = ax.table(
-    cellText=table.values,
-    colLabels=table.columns,
+    cellText=formatted_data.values,
+    colLabels=formatted_data.columns,
     cellLoc='center',
     loc='center'
 )
 
-# Выделение строки с введённой ценой красным и строки с минимальной недостачей крипты зелёным
+# Выделение строк
 nearest_zero_row_idx = (table["Недостача крипты"].abs()).idxmin()
 user_price_row_idx = table[table["Цена крипты, rub"] == offered_price_rub].index
 
 for (row, col), cell in table_plot.get_celld().items():
-    if row == 0:  # Пропустить заголовки
+    if row == 0:
         continue
     if row - 1 == nearest_zero_row_idx:
         cell.set_facecolor("lightgreen")
     if row - 1 in user_price_row_idx:
         cell.set_facecolor("lightcoral")
 
-# Генерация имени файла с датой и временем
+# Генерация имени файла
 current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 output_path = f"/home/vladimir/Документы/Crypto/таблицы рублёвых переплат/overpayment_{current_time}.pdf"
 
-# Сохранение таблицы в PDF
+# Сохранение таблицы
 with PdfPages(output_path) as pdf:
     pdf.savefig(fig, bbox_inches='tight')
 
